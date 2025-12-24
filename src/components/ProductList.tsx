@@ -4,12 +4,24 @@ import { ProductCard } from "@/components/ProductCard";
 import { Product } from "@/types/store";
 import { getProductsByCategory } from "@/data/products";
 
+import categoryBrainrot from "@/assets/category-brainrot.png";
+import categoryBloxfruits from "@/assets/category-bloxfruits.png";
+import category99noites from "@/assets/category-99noites.png";
+import categoryPlantas from "@/assets/category-plantas.png";
+
 interface ProductListProps {
   categoryId: string;
   categoryName: string;
   onBack: () => void;
   onAddToCart: (product: Product) => void;
 }
+
+const categoryImages: Record<string, string> = {
+  "roube-um-brainrot": categoryBrainrot,
+  "blox-fruits": categoryBloxfruits,
+  "99-noites": category99noites,
+  "plantas-vs-brainrots": categoryPlantas,
+};
 
 export const ProductList = ({
   categoryId,
@@ -18,6 +30,7 @@ export const ProductList = ({
   onAddToCart,
 }: ProductListProps) => {
   const products = getProductsByCategory(categoryId);
+  const categoryImage = categoryImages[categoryId];
 
   return (
     <section className="py-12">
@@ -40,6 +53,7 @@ export const ProductList = ({
               <ProductCard
                 key={product.id}
                 product={product}
+                categoryImage={categoryImage}
                 onAddToCart={onAddToCart}
               />
             ))}
