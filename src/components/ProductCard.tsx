@@ -5,10 +5,11 @@ import { Product } from "@/types/store";
 
 interface ProductCardProps {
   product: Product;
+  categoryImage?: string;
   onAddToCart: (product: Product) => void;
 }
 
-export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+export const ProductCard = ({ product, categoryImage, onAddToCart }: ProductCardProps) => {
   const formatPrice = (price: number) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
@@ -18,8 +19,16 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
 
   return (
     <Card className="overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 group">
-      <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center">
-        <span className="text-4xl">🎮</span>
+      <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center overflow-hidden">
+        {categoryImage ? (
+          <img 
+            src={categoryImage} 
+            alt={product.name} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+        ) : (
+          <span className="text-4xl">🎮</span>
+        )}
       </div>
       <div className="p-4 space-y-3">
         <h3 className="font-display font-semibold text-lg line-clamp-1">{product.name}</h3>
