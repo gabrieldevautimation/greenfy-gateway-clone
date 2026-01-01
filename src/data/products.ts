@@ -21,6 +21,16 @@ import productBloxSanguine from "@/assets/product-blox-sanguine.png";
 import productBloxSgGhm from "@/assets/product-blox-sg-ghm.png";
 import productBloxTrex from "@/assets/product-blox-trex.png";
 import productBloxMiticas from "@/assets/product-blox-miticas.png";
+import productBlox27Miticas from "@/assets/product-blox-27miticas.png";
+import productBloxYeti from "@/assets/product-blox-yeti.png";
+import productBloxTiger from "@/assets/product-blox-tiger.png";
+import productBloxCaixaEpica from "@/assets/product-blox-caixa-epica.png";
+import productBloxCaixaLendaria from "@/assets/product-blox-caixa-lendaria.png";
+import productBloxDough from "@/assets/product-blox-dough.png";
+import productBloxGas from "@/assets/product-blox-gas.png";
+import productBloxRacaV4Random from "@/assets/product-blox-raca-v4-random.png";
+import productBloxRacaV4Draco from "@/assets/product-blox-raca-v4-draco.png";
+import productBloxRacaV4Ghoul from "@/assets/product-blox-raca-v4-ghoul.png";
 export const products: Product[] = [
   // ROUBE UM BRAINROT (18 produtos das 3 primeiras imagens)
   {
@@ -240,6 +250,7 @@ export const products: Product[] = [
     description: "Conta level máximo com 2 a 7 frutas míticas",
     price: 7.90,
     category: "blox-fruits",
+    image: productBlox27Miticas,
     stock: 20,
   },
   {
@@ -282,14 +293,15 @@ export const products: Product[] = [
     price: 5.80,
     category: "blox-fruits",
     stock: 30,
-    image: productBloxTrex,
+    image: productBloxYeti,
   },
   {
     id: "blox-13",
-    name: "LVL Max + GHM + Tiger Ranrok (Promoção)",
-    description: "Conta level máximo com GHM e Tiger Ranrok - Promoção do Ano",
+    name: "LVL Max + GHM + Tiger Rework (Promoção)",
+    description: "Conta level máximo com GHM e Tiger Rework - Promoção do Ano",
     price: 12.00,
     category: "blox-fruits",
+    image: productBloxTiger,
     stock: 18,
   },
   {
@@ -306,6 +318,7 @@ export const products: Product[] = [
     description: "Caixa aleatória com itens épicos",
     price: 6.78,
     category: "blox-fruits",
+    image: productBloxCaixaEpica,
     stock: 35,
   },
   {
@@ -314,6 +327,7 @@ export const products: Product[] = [
     description: "Caixa aleatória com itens lendários",
     price: 11.50,
     category: "blox-fruits",
+    image: productBloxCaixaLendaria,
     stock: 25,
   },
   {
@@ -322,6 +336,7 @@ export const products: Product[] = [
     description: "Conta level máximo com GHM e Dough",
     price: 7.80,
     category: "blox-fruits",
+    image: productBloxDough,
     stock: 20,
   },
   {
@@ -330,6 +345,7 @@ export const products: Product[] = [
     description: "Conta level máximo com GHM e Gás",
     price: 5.80,
     category: "blox-fruits",
+    image: productBloxGas,
     stock: 28,
   },
   {
@@ -339,14 +355,15 @@ export const products: Product[] = [
     price: 16.40,
     category: "blox-fruits",
     stock: 15,
-    image: productBloxLvlmaxV4,
+    image: productBloxRacaV4Random,
   },
   {
     id: "blox-20",
-    name: "LVL Max + GHM + Raça V4 Full Shark",
-    description: "Conta level máximo com GHM e Raça V4 Full Shark",
+    name: "LVL Max + GHM + Raça V4 Full Draco",
+    description: "Conta level máximo com GHM e Raça V4 Full Draco",
     price: 18.07,
     category: "blox-fruits",
+    image: productBloxRacaV4Draco,
     stock: 12,
   },
   {
@@ -355,6 +372,7 @@ export const products: Product[] = [
     description: "Conta level máximo com GHM e Raça V4 Full Ghoul",
     price: 19.99,
     category: "blox-fruits",
+    image: productBloxRacaV4Ghoul,
     stock: 10,
   },
   {
