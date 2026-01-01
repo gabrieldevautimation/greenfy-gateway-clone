@@ -1,5 +1,6 @@
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import heroLogo from "@/assets/hero-logo.png";
 
 export const Hero = () => {
   return (
@@ -37,12 +38,12 @@ export const Hero = () => {
           {/* Hero Image */}
           <div className="relative flex justify-center lg:justify-end">
             <div className="relative animate-float">
-              <div className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-primary/30 via-primary/10 to-transparent flex items-center justify-center">
-                <div className="text-center">
-                  <span className="font-display text-4xl md:text-5xl font-bold text-glow">Blox</span>
-                  <span className="font-display text-4xl md:text-5xl font-bold text-primary">Store</span>
-                  <p className="font-display text-xl text-muted-foreground mt-2">Brasil</p>
-                </div>
+              <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden flex items-center justify-center">
+                <img 
+                  src={heroLogo} 
+                  alt="BloxStoreBrasil" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               {/* Floating Stars */}
               <div className="absolute -top-4 right-8 text-warning text-2xl animate-pulse">★</div>

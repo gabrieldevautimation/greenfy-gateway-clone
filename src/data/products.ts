@@ -1,5 +1,15 @@
 import { Product } from "@/types/store";
 
+// Import product images
+import productBrainrot100m300m from "@/assets/product-brainrot-100m-300m.png";
+import productBrainrot200m500m from "@/assets/product-brainrot-200m-500m.png";
+import productSwagBrosGold from "@/assets/product-swag-bros-gold.png";
+import productCookieAndMilk from "@/assets/product-cookie-and-milk.png";
+import productBrainrot200m10b from "@/assets/product-brainrot-200m-10b.png";
+import productSecretCombinacion from "@/assets/product-secret-combinacion.png";
+import productGaramaMadundung from "@/assets/product-garama-madundung.png";
+import productSecretCombinacionDiamond from "@/assets/product-secret-combinacion-diamond.png";
+
 export const products: Product[] = [
   // ROUBE UM BRAINROT (18 produtos das 3 primeiras imagens)
   {
@@ -9,6 +19,7 @@ export const products: Product[] = [
     price: 57.92,
     category: "roube-um-brainrot",
     stock: 10,
+    image: productBrainrot200m500m,
   },
   {
     id: "brainrot-2",
@@ -73,6 +84,7 @@ export const products: Product[] = [
     price: 32.90,
     category: "roube-um-brainrot",
     stock: 15,
+    image: productBrainrot100m300m,
   },
   {
     id: "brainrot-10",
@@ -81,46 +93,52 @@ export const products: Product[] = [
     price: 149.75,
     category: "roube-um-brainrot",
     stock: 8,
+    image: productBrainrot200m10b,
   },
   {
     id: "brainrot-11",
-    name: "Brainrot Chimnino 238M/s",
-    description: "Brainrot Chimnino exclusivo com 238M/s",
+    name: "Swag Bros Gold 910m/s",
+    description: "Swag Bros Gold exclusivo com 910m/s",
     price: 54.90,
     category: "roube-um-brainrot",
     stock: 12,
+    image: productSwagBrosGold,
   },
   {
     id: "brainrot-12",
-    name: "Brainrot Esok Sekolah Radioativo 250m/s",
-    description: "Brainrot Esok Sekolah Radioativo com 250m/s",
+    name: "Cookie and Milk 1,4 Bilhões por Segundo",
+    description: "Cookie and Milk com 1,4B/s",
     price: 69.90,
     category: "roube-um-brainrot",
     stock: 10,
+    image: productCookieAndMilk,
   },
   {
     id: "brainrot-13",
-    name: "Brainrot Esok Sekolah 240m/s",
-    description: "Brainrot Esok Sekolah com 240m/s",
+    name: "La Secret Combinacion 660m/s",
+    description: "La Secret Combinacion com 660m/s",
     price: 74.39,
     category: "roube-um-brainrot",
     stock: 8,
+    image: productSecretCombinacion,
   },
   {
     id: "brainrot-14",
-    name: "Brainrot Los Hotspots 100m/s",
-    description: "Brainrot Los Hotspots com 100m/s",
+    name: "Garama and Madundung 50m/s",
+    description: "Garama and Madundung com 50m/s",
     price: 34.90,
     category: "roube-um-brainrot",
     stock: 15,
+    image: productGaramaMadundung,
   },
   {
     id: "brainrot-15",
-    name: "Lucky Block Admin",
-    description: "Lucky Block Admin exclusivo",
+    name: "La Secret Combinacion 187m/s Diamond",
+    description: "La Secret Combinacion Diamond com 187m/s",
     price: 5.49,
     category: "roube-um-brainrot",
     stock: 30,
+    image: productSecretCombinacionDiamond,
   },
   {
     id: "brainrot-16",
