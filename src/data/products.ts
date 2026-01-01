@@ -1,6 +1,6 @@
 import { Product } from "@/types/store";
 
-// Import product images
+// Import product images - Brainrot
 import productBrainrot100m300m from "@/assets/product-brainrot-100m-300m.png";
 import productBrainrot200m500m from "@/assets/product-brainrot-200m-500m.png";
 import productSwagBrosGold from "@/assets/product-swag-bros-gold.png";
@@ -9,7 +9,18 @@ import productBrainrot200m10b from "@/assets/product-brainrot-200m-10b.png";
 import productSecretCombinacion from "@/assets/product-secret-combinacion.png";
 import productGaramaMadundung from "@/assets/product-garama-madundung.png";
 import productSecretCombinacionDiamond from "@/assets/product-secret-combinacion-diamond.png";
+import productBrainrotGod from "@/assets/product-brainrot-god.png";
+import productBrainrotSecret from "@/assets/product-brainrot-secret.png";
+import productBrainrot30m100m from "@/assets/product-brainrot-30m-100m.png";
+import productBrainrot10m40m from "@/assets/product-brainrot-10m-40m.png";
 
+// Import product images - Blox Fruits
+import productBloxLvlmaxV4 from "@/assets/product-blox-lvlmax-v4.png";
+import productBloxGhmPremium from "@/assets/product-blox-ghm-premium.png";
+import productBloxSanguine from "@/assets/product-blox-sanguine.png";
+import productBloxSgGhm from "@/assets/product-blox-sg-ghm.png";
+import productBloxTrex from "@/assets/product-blox-trex.png";
+import productBloxMiticas from "@/assets/product-blox-miticas.png";
 export const products: Product[] = [
   // ROUBE UM BRAINROT (18 produtos das 3 primeiras imagens)
   {
@@ -27,6 +38,7 @@ export const products: Product[] = [
     description: "Brainrot GOD aleatório garantido",
     price: 2.00,
     category: "roube-um-brainrot",
+    image: productBrainrotGod,
     stock: 25,
   },
   {
@@ -35,6 +47,7 @@ export const products: Product[] = [
     description: "Brainrot Secret aleatório garantido",
     price: 3.90,
     category: "roube-um-brainrot",
+    image: productBrainrotSecret,
     stock: 30,
   },
   {
@@ -44,6 +57,7 @@ export const products: Product[] = [
     price: 4.90,
     category: "roube-um-brainrot",
     stock: 20,
+    image: productBrainrotGod,
   },
   {
     id: "brainrot-5",
@@ -52,6 +66,7 @@ export const products: Product[] = [
     price: 15.99,
     category: "roube-um-brainrot",
     stock: 15,
+    image: productBrainrotSecret,
   },
   {
     id: "brainrot-6",
@@ -68,6 +83,7 @@ export const products: Product[] = [
     price: 14.90,
     category: "roube-um-brainrot",
     stock: 25,
+    image: productBrainrot10m40m,
   },
   {
     id: "brainrot-8",
@@ -76,6 +92,7 @@ export const products: Product[] = [
     price: 19.90,
     category: "roube-um-brainrot",
     stock: 20,
+    image: productBrainrot30m100m,
   },
   {
     id: "brainrot-9",
@@ -180,6 +197,7 @@ export const products: Product[] = [
     description: "Conta level máximo com GHM Human Premium",
     price: 3.59,
     category: "blox-fruits",
+    image: productBloxGhmPremium,
     stock: 30,
   },
   {
@@ -189,6 +207,7 @@ export const products: Product[] = [
     price: 12.50,
     category: "blox-fruits",
     stock: 20,
+    image: productBloxSanguine,
   },
   {
     id: "blox-4",
@@ -213,6 +232,7 @@ export const products: Product[] = [
     price: 6.40,
     category: "blox-fruits",
     stock: 28,
+    image: productBloxMiticas,
   },
   {
     id: "blox-7",
@@ -237,6 +257,7 @@ export const products: Product[] = [
     price: 14.80,
     category: "blox-fruits",
     stock: 15,
+    image: productBloxSgGhm,
   },
   {
     id: "blox-10",
@@ -261,6 +282,7 @@ export const products: Product[] = [
     price: 5.80,
     category: "blox-fruits",
     stock: 30,
+    image: productBloxTrex,
   },
   {
     id: "blox-13",
@@ -317,6 +339,7 @@ export const products: Product[] = [
     price: 16.40,
     category: "blox-fruits",
     stock: 15,
+    image: productBloxLvlmaxV4,
   },
   {
     id: "blox-20",
