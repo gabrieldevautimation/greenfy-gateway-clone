@@ -20,7 +20,13 @@ export const ProductCard = ({ product, categoryImage, onAddToCart }: ProductCard
   return (
     <Card className="overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 group">
       <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center overflow-hidden">
-        {categoryImage ? (
+        {product.image ? (
+          <img 
+            src={product.image} 
+            alt={product.name} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+        ) : categoryImage ? (
           <img 
             src={categoryImage} 
             alt={product.name} 
