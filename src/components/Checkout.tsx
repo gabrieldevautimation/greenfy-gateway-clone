@@ -74,6 +74,7 @@ export const Checkout = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         mode: "cors",
         body: JSON.stringify(payload),
@@ -83,17 +84,41 @@ export const Checkout = ({
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("Resposta do n8n:", data);
+      const rawText = await response.text();
+      console.log("Resposta bruta do n8n:", rawText);
+
+      if (!rawText?.trim()) {
+        throw new Error("Webhook retornou resposta vazia (sem JSON). Verifique o último nó do n8n.");
+      }
+
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error("Webhook retornou JSON inválido. Veja o console para a resposta bruta.");
+      }
+
+      const normalized =
+        data && typeof data === "object" && data.payload && typeof data.payload === "object"
+          ? data.payload
+          : data;
+
+      const qrCodeSvgRaw = normalized?.qr_code_svg || normalized?.qrCodeSvg;
+      const qrCodeSvg = typeof qrCodeSvgRaw === "string" ? qrCodeSvgRaw.trim() : undefined;
+
+      const pixCopyPasteRaw =
+        normalized?.pixCopyPaste || normalized?.pix_copy_paste || normalized?.payload;
+      const pixCopyPaste =
+        typeof pixCopyPasteRaw === "string" ? pixCopyPasteRaw : undefined;
 
       setPaymentData({
         success: true,
-        qrCode: data.qrCode || data.qr_code,
-        qrCodeBase64: data.qrCodeBase64 || data.qr_code_base64,
-        qrCodeSvg: data.qr_code_svg || data.qrCodeSvg,
-        pixCopyPaste: data.pixCopyPaste || data.pix_copy_paste || data.payload,
-        transactionId: data.transactionId || data.transaction_id,
-        checkoutUrl: data.checkout_url || data.checkoutUrl,
+        qrCode: normalized?.qrCode || normalized?.qr_code,
+        qrCodeBase64: normalized?.qrCodeBase64 || normalized?.qr_code_base64,
+        qrCodeSvg,
+        pixCopyPaste,
+        transactionId: normalized?.transactionId || normalized?.transaction_id,
+        checkoutUrl: normalized?.checkout_url || normalized?.checkoutUrl,
       });
 
       toast({
@@ -102,9 +127,13 @@ export const Checkout = ({
       });
     } catch (error) {
       console.error("Erro ao gerar PIX:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Tente novamente. Verifique se o webhook está correto.";
       toast({
         title: "Erro ao gerar PIX",
-        description: "Tente novamente. Verifique se o webhook está correto.",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -200,8 +229,9 @@ export const Checkout = ({
                 {/* SVG QR Code - renderizado via dangerouslySetInnerHTML */}
                 {paymentData.qrCodeSvg && (
                   <div className="bg-white p-4 rounded-lg inline-block">
-                    <div 
-                      className="w-64 h-64 sm:w-80 sm:h-80 max-w-[300px] max-h-[300px] mx-auto [&>svg]:w-full [&>svg]:h-full"
+                    <div
+                      className="flex justify-center [&>svg]:max-w-[400px] [&>svg]:max-h-[400px] [&>svg]:w-auto [&>svg]:h-auto"
+                      aria-label="QR Code PIX"
                       dangerouslySetInnerHTML={{ __html: paymentData.qrCodeSvg }}
                     />
                   </div>
