@@ -90,8 +90,10 @@ export const Checkout = ({
         success: true,
         qrCode: data.qrCode || data.qr_code,
         qrCodeBase64: data.qrCodeBase64 || data.qr_code_base64,
+        qrCodeSvg: data.qr_code_svg || data.qrCodeSvg,
         pixCopyPaste: data.pixCopyPaste || data.pix_copy_paste || data.payload,
         transactionId: data.transactionId || data.transaction_id,
+        checkoutUrl: data.checkout_url || data.checkoutUrl,
       });
 
       toast({
@@ -195,7 +197,18 @@ export const Checkout = ({
                   PIX Gerado com Sucesso!
                 </h3>
 
-                {paymentData.qrCodeBase64 && (
+                {/* SVG QR Code - renderizado via dangerouslySetInnerHTML */}
+                {paymentData.qrCodeSvg && (
+                  <div className="bg-white p-4 rounded-lg inline-block">
+                    <div 
+                      className="w-64 h-64 sm:w-80 sm:h-80 max-w-[300px] max-h-[300px] mx-auto [&>svg]:w-full [&>svg]:h-full"
+                      dangerouslySetInnerHTML={{ __html: paymentData.qrCodeSvg }}
+                    />
+                  </div>
+                )}
+
+                {/* Base64 QR Code fallback */}
+                {paymentData.qrCodeBase64 && !paymentData.qrCodeSvg && (
                   <div className="bg-white p-4 rounded-lg inline-block">
                     <img
                       src={`data:image/png;base64,${paymentData.qrCodeBase64}`}
@@ -205,7 +218,8 @@ export const Checkout = ({
                   </div>
                 )}
 
-                {paymentData.qrCode && !paymentData.qrCodeBase64 && (
+                {/* URL QR Code fallback */}
+                {paymentData.qrCode && !paymentData.qrCodeBase64 && !paymentData.qrCodeSvg && (
                   <div className="bg-white p-4 rounded-lg inline-block">
                     <img
                       src={paymentData.qrCode}
