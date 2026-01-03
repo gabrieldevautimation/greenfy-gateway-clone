@@ -27,7 +27,9 @@ export interface PaymentResponse {
   success: boolean;
   qrCode?: string;
   qrCodeBase64?: string;
+  qrCodeSvg?: string;
   pixCopyPaste?: string;
   transactionId?: string;
+  checkoutUrl?: string;
   error?: string;
 }
