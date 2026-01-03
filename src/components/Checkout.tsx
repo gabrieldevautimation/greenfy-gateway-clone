@@ -103,8 +103,21 @@ export const Checkout = ({
           ? data.payload
           : data;
 
-      const qrCodeSvgRaw = normalized?.qr_code_svg || normalized?.qrCodeSvg;
-      const qrCodeSvg = typeof qrCodeSvgRaw === "string" ? qrCodeSvgRaw.trim() : undefined;
+      const qrCodeSvgRaw =
+        normalized?.qr_code_svg ||
+        normalized?.qrCodeSvg ||
+        // Alguns fluxos no n8n acabam devolvendo o SVG em um campo “base64” por engano.
+        // Se vier como texto começando com <svg> (ou <?xml ...><svg>), tratamos como SVG.
+        normalized?.qr_code_base64 ||
+        normalized?.qrCodeBase64;
+
+      let qrCodeSvg = typeof qrCodeSvgRaw === "string" ? qrCodeSvgRaw.trim() : undefined;
+      if (qrCodeSvg?.startsWith("<?xml")) {
+        qrCodeSvg = qrCodeSvg.replace(/^<\?xml[\s\S]*?\?>\s*/i, "");
+      }
+      if (qrCodeSvg && !/^\s*<svg\b/i.test(qrCodeSvg)) {
+        qrCodeSvg = undefined;
+      }
 
       const pixCopyPasteRaw =
         normalized?.pixCopyPaste || normalized?.pix_copy_paste || normalized?.payload;
@@ -227,36 +240,19 @@ export const Checkout = ({
                 </h3>
 
                 {/* SVG QR Code - renderizado via dangerouslySetInnerHTML */}
-                {paymentData.qrCodeSvg && (
+                {paymentData.qrCodeSvg ? (
                   <div className="bg-white p-4 rounded-lg inline-block">
                     <div
-                      className="flex justify-center [&>svg]:max-w-[400px] [&>svg]:max-h-[400px] [&>svg]:w-auto [&>svg]:h-auto"
+                      className="flex justify-center [&>svg]:max-w-[400px] [&>svg]:max-h-[400px] [&>svg]:w-full [&>svg]:h-auto"
                       aria-label="QR Code PIX"
                       dangerouslySetInnerHTML={{ __html: paymentData.qrCodeSvg }}
                     />
                   </div>
-                )}
-
-                {/* Base64 QR Code fallback */}
-                {paymentData.qrCodeBase64 && !paymentData.qrCodeSvg && (
-                  <div className="bg-white p-4 rounded-lg inline-block">
-                    <img
-                      src={`data:image/png;base64,${paymentData.qrCodeBase64}`}
-                      alt="QR Code PIX"
-                      className="w-48 h-48 mx-auto"
-                    />
-                  </div>
-                )}
-
-                {/* URL QR Code fallback */}
-                {paymentData.qrCode && !paymentData.qrCodeBase64 && !paymentData.qrCodeSvg && (
-                  <div className="bg-white p-4 rounded-lg inline-block">
-                    <img
-                      src={paymentData.qrCode}
-                      alt="QR Code PIX"
-                      className="w-48 h-48 mx-auto"
-                    />
-                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    O webhook não retornou <code>qr_code_svg</code> como texto (string que começa com
+                    <code>&lt;svg</code>). Ajuste o retorno do n8n para enviar o SVG em JSON.
+                  </p>
                 )}
 
                 {paymentData.pixCopyPaste && (
