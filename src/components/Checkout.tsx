@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { CartItem, PaymentResponse } from "@/types/store";
+import { CartItem } from "@/types/store";
+import QRCode from "react-qr-code";
 
 interface CheckoutProps {
   items: CartItem[];
@@ -22,7 +23,11 @@ export const Checkout = ({
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null);
+  const [paymentData, setPaymentData] = useState<{
+    pixPayload: string;
+    transactionId?: string;
+    checkoutUrl?: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const formatPrice = (price: number) => {
@@ -98,40 +103,22 @@ export const Checkout = ({
         throw new Error("Webhook retornou JSON inválido. Veja o console para a resposta bruta.");
       }
 
-      const normalized =
-        data && typeof data === "object" && data.payload && typeof data.payload === "object"
-          ? data.payload
-          : data;
+      // Suporta resposta como array ou objeto direto
+      const responseData = Array.isArray(data) ? data[0] : data;
+      
+      // Extrai o payload PIX do campo data.pix.qrcode
+      const pixPayload = responseData?.data?.pix?.qrcode;
+      const transactionId = responseData?.data?.id?.toString();
+      const checkoutUrl = responseData?.data?.secureUrl;
 
-      const qrCodeSvgRaw =
-        normalized?.qr_code_svg ||
-        normalized?.qrCodeSvg ||
-        // Alguns fluxos no n8n acabam devolvendo o SVG em um campo “base64” por engano.
-        // Se vier como texto começando com <svg> (ou <?xml ...><svg>), tratamos como SVG.
-        normalized?.qr_code_base64 ||
-        normalized?.qrCodeBase64;
-
-      let qrCodeSvg = typeof qrCodeSvgRaw === "string" ? qrCodeSvgRaw.trim() : undefined;
-      if (qrCodeSvg?.startsWith("<?xml")) {
-        qrCodeSvg = qrCodeSvg.replace(/^<\?xml[\s\S]*?\?>\s*/i, "");
+      if (!pixPayload) {
+        throw new Error("Resposta não contém o payload PIX (data.pix.qrcode)");
       }
-      if (qrCodeSvg && !/^\s*<svg\b/i.test(qrCodeSvg)) {
-        qrCodeSvg = undefined;
-      }
-
-      const pixCopyPasteRaw =
-        normalized?.pixCopyPaste || normalized?.pix_copy_paste || normalized?.payload;
-      const pixCopyPaste =
-        typeof pixCopyPasteRaw === "string" ? pixCopyPasteRaw : undefined;
 
       setPaymentData({
-        success: true,
-        qrCode: normalized?.qrCode || normalized?.qr_code,
-        qrCodeBase64: normalized?.qrCodeBase64 || normalized?.qr_code_base64,
-        qrCodeSvg,
-        pixCopyPaste,
-        transactionId: normalized?.transactionId || normalized?.transaction_id,
-        checkoutUrl: normalized?.checkout_url || normalized?.checkoutUrl,
+        pixPayload,
+        transactionId,
+        checkoutUrl,
       });
 
       toast({
@@ -155,8 +142,8 @@ export const Checkout = ({
   };
 
   const handleCopyPix = () => {
-    if (paymentData?.pixCopyPaste) {
-      navigator.clipboard.writeText(paymentData.pixCopyPaste);
+    if (paymentData?.pixPayload) {
+      navigator.clipboard.writeText(paymentData.pixPayload);
       setCopied(true);
       toast({
         title: "Copiado!",
@@ -239,47 +226,40 @@ export const Checkout = ({
                   PIX Gerado com Sucesso!
                 </h3>
 
-                {/* SVG QR Code - renderizado via dangerouslySetInnerHTML */}
-                {paymentData.qrCodeSvg ? (
-                  <div className="bg-white p-4 rounded-lg inline-block">
-                    <div
-                      className="flex justify-center [&>svg]:max-w-[400px] [&>svg]:max-h-[400px] [&>svg]:w-full [&>svg]:h-auto"
-                      aria-label="QR Code PIX"
-                      dangerouslySetInnerHTML={{ __html: paymentData.qrCodeSvg }}
-                    />
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    O webhook não retornou <code>qr_code_svg</code> como texto (string que começa com
-                    <code>&lt;svg</code>). Ajuste o retorno do n8n para enviar o SVG em JSON.
-                  </p>
-                )}
+                {/* QR Code gerado a partir do payload PIX */}
+                <div className="bg-white p-4 rounded-lg inline-block">
+                  <QRCode
+                    value={paymentData.pixPayload}
+                    size={256}
+                    level="M"
+                    className="mx-auto"
+                  />
+                </div>
 
-                {paymentData.pixCopyPaste && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Ou copie o código PIX:
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
-                        value={paymentData.pixCopyPaste}
-                        readOnly
-                        className="bg-input border-border text-xs"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={handleCopyPix}
-                        className="shrink-0"
-                      >
-                        {copied ? (
-                          <CheckCircle className="h-4 w-4 text-success" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                {/* Código PIX copia e cola */}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Ou copie o código PIX:
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={paymentData.pixPayload}
+                      readOnly
+                      className="bg-input border-border text-xs"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleCopyPix}
+                      className="shrink-0"
+                    >
+                      {copied ? (
+                        <CheckCircle className="h-4 w-4 text-success" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
                   </div>
-                )}
+                </div>
 
                 <p className="text-sm text-muted-foreground">
                   Após o pagamento, você receberá os dados em{" "}
