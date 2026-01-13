@@ -70,7 +70,7 @@ export const N8nConfig = ({ webhookUrl, onSave }: N8nConfigProps) => {
           <div className="bg-secondary/50 p-4 rounded-lg text-sm space-y-2">
             <p className="font-semibold">O webhook receberá:</p>
             <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
-{`{
+              {`{
   "email": "cliente@email.com",
   "products": [...],
   "total": 99.90,
@@ -79,8 +79,7 @@ export const N8nConfig = ({ webhookUrl, onSave }: N8nConfigProps) => {
             </pre>
             <p className="font-semibold mt-2">E deve retornar:</p>
             <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
-{`{
-  "qrCodeBase64": "...",
+              {`{
   "pixCopyPaste": "...",
   "transactionId": "..."
 }`}

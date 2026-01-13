@@ -1,5 +1,10 @@
-import { ShoppingCart, LogIn, MessageCircle } from "lucide-react";
+import { ShoppingCart, LogIn, MessageCircle, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface HeaderProps {
   cartCount?: number;
@@ -30,7 +35,7 @@ export const Header = ({ cartCount = 0, onCartClick }: HeaderProps) => {
             </span>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation - Desktop */}
           <nav className="hidden md:flex items-center gap-6">
             <a href="#categorias" className="text-muted-foreground hover:text-foreground transition-colors">
               Categorias
@@ -45,26 +50,57 @@ export const Header = ({ cartCount = 0, onCartClick }: HeaderProps) => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" className="hidden md:flex text-muted-foreground hover:text-foreground">
               <MessageCircle className="h-5 w-5" />
             </Button>
             <Button variant="ghost" className="hidden sm:flex items-center gap-2">
               <LogIn className="h-4 w-4" />
               Entrar
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex items-center gap-2 border-primary/50 hover:bg-primary/10"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-4 w-4" />
-              Carrinho
+              <span className="hidden sm:inline">Carrinho</span>
               {cartCount > 0 && (
                 <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                   {cartCount}
                 </span>
               )}
             </Button>
+
+            {/* Mobile Menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <div className="flex flex-col gap-6 mt-6">
+                  <span className="font-display font-bold text-xl mb-4">
+                    BloxStoreBrasil
+                  </span>
+                  <nav className="flex flex-col gap-4">
+                    <a href="#categorias" className="text-lg text-muted-foreground hover:text-foreground transition-colors">
+                      Categorias
+                    </a>
+                    <a href="#faq" className="text-lg text-muted-foreground hover:text-foreground transition-colors">
+                      FAQ
+                    </a>
+                    <a href="#avaliacoes" className="text-lg text-muted-foreground hover:text-foreground transition-colors">
+                      Avaliações
+                    </a>
+                  </nav>
+                  <Button variant="ghost" className="justify-start px-0 text-lg gap-2 text-muted-foreground hover:text-foreground">
+                    <LogIn className="h-5 w-5" />
+                    Entrar
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

@@ -25,10 +25,13 @@ export const Checkout = ({
   const [isLoading, setIsLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<{
     pixPayload: string;
+    pixImage?: string;
     transactionId?: string;
     checkoutUrl?: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<string | null>(null);
 
   const formatPrice = (price: number) => {
     return price.toLocaleString("pt-BR", {
@@ -40,10 +43,23 @@ export const Checkout = ({
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleGeneratePix = async () => {
-    if (!email) {
+    setLastError(null);
+    setRawResponse(null);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       toast({
         title: "Erro",
-        description: "Por favor, informe seu e-mail.",
+        description: "Por favor, informe um e-mail válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (total <= 0) {
+      toast({
+        title: "Erro",
+        description: "O carrinho está vazio ou com valor zero.",
         variant: "destructive",
       });
       return;
@@ -61,15 +77,35 @@ export const Checkout = ({
     setIsLoading(true);
 
     try {
+      // Generate a unique ID for the transaction
+      const externalId = `ped_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      const customerName = email.split("@")[0];
+
+      // Construct payload matching the API schema hints from the error
       const payload = {
+        external_id: externalId,
+        amount: Number(total.toFixed(2)), // Send as actual Number (e.g. 15.99)
+        total_amount: Number(total.toFixed(2)), // Send as actual Number
+        payment_method: "PIX",
+        customer: { // Nested structure for robust API integration
+          name: customerName,
+          email: email,
+          document: {
+            number: "07254882774", // CPF Válido de teste
+            type: "cpf" // Lowercase to pass enum validation ('d' vs 'D')
+          }
+        },
+        // Flat fields exactly as n8n variables expect them
+        nome: customerName,
         email,
+        document: "07254882774",
+        document_type: "cpf", // IMPORTANT: Legacy field for {{ $json.document_type }}
         products: items.map((item) => ({
           id: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,
         })),
-        total,
         timestamp: new Date().toISOString(),
       };
 
@@ -85,38 +121,150 @@ export const Checkout = ({
         body: JSON.stringify(payload),
       });
 
+      const rawText = await response.text();
+      setRawResponse(rawText || "(Resposta vazia)"); // Show placeholder if empty
+      console.log("Resposta bruta do n8n (status " + response.status + "):", rawText);
+
+      // Always check for error status, but now we have the body to show to user
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Erro HTTP ${response.status}: ${rawText.slice(0, 200)}...`);
       }
 
-      const rawText = await response.text();
-      console.log("Resposta bruta do n8n:", rawText);
-
+      // Allow empty response if status is 204, but warn if we expected data
       if (!rawText?.trim()) {
-        throw new Error("Webhook retornou resposta vazia (sem JSON). Verifique o último nó do n8n.");
+        console.warn("Resposta vazia com status " + response.status);
+        throw new Error(`O n8n respondeu com sucesso (Status ${response.status}) mas não enviou dados.`);
       }
 
       let data: any;
-      try {
-        data = JSON.parse(rawText);
-      } catch {
-        throw new Error("Webhook retornou JSON inválido. Veja o console para a resposta bruta.");
+      let isBase64String = false;
+
+      // Check if raw text looks like a base64 string directly
+      // Base64 regex for simple validation (alphanumeric, +, /, =)
+      const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+      // Very loose check: if it has no spaces/brackets/braces and is long, treat as possible base64
+      if (!rawText.trim().startsWith("{") && !rawText.trim().startsWith("[") && rawText.length > 20) {
+        isBase64String = true;
+        data = { pixPayload: rawText.trim() }; // Treat the whole text as the payload
+      } else {
+        try {
+          data = JSON.parse(rawText);
+        } catch {
+          // If parse fails and it wasn't obviously base64, assume it might be a weird string response
+          // or invalid JSON. Let's try to treat it as a string payload if it's not HTML.
+          if (!rawText.trim().startsWith("<")) {
+            data = { pixPayload: rawText.trim() };
+          } else {
+            throw new Error("Webhook retornou resposta inválida (não é JSON nem texto simples/base64).");
+          }
+        }
       }
 
-      // Suporta resposta como array ou objeto direto
+      // Handle n8n's default structure where data might be wrapped in a "json" property
       const responseData = Array.isArray(data) ? data[0] : data;
-      
-      // Extrai o payload PIX do campo data.pix.qrcode
-      const pixPayload = responseData?.data?.pix?.qrcode;
-      const transactionId = responseData?.data?.id?.toString();
-      const checkoutUrl = responseData?.data?.secureUrl;
+      const actualData = responseData?.json || responseData;
 
-      if (!pixPayload) {
-        throw new Error("Resposta não contém o payload PIX (data.pix.qrcode)");
+      const findPixPayload = (obj: any): string | null => {
+        if (!obj) return null;
+
+        // Direct string check
+        if (typeof obj === "string") {
+          const trimmed = obj.trim();
+          // Standard PIX
+          if (trimmed.startsWith("000201")) return trimmed;
+          // Base64 image
+          if (trimmed.startsWith("data:image")) return trimmed;
+          // Possible raw base64 without prefix (length check to avoid short strings)
+          if (trimmed.length > 100 && !trimmed.includes("{")) return trimmed;
+          return null;
+        }
+
+        if (typeof obj === "object") {
+          // Check common keys
+          // Added 'qr_code_base64', 'base64', 'imagem'
+          const keysToCheck = ["qrcode", "pixCopyPaste", "copia_e_cola", "brcode", "payload", "qr_code_base64", "base64", "imagem", "img"];
+          for (const key of keysToCheck) {
+            if (obj[key] && typeof obj[key] === "string") {
+              const val = obj[key].trim();
+              if (val.startsWith("000201") || val.startsWith("data:image") || val.length > 50) {
+                return val;
+              }
+            }
+          }
+
+          // Recursive search
+          for (const key in obj) {
+            if (typeof obj[key] === "object") {
+              const found = findPixPayload(obj[key]);
+              if (found) return found;
+            }
+          }
+        }
+        return null;
+      };
+
+      let pixText: string | null = null;
+      let pixImage: string | null = null;
+
+      // Extract text (EMV) - Loose check to match original behavior (accepts anything in these keys)
+      if (actualData?.copia_e_cola) pixText = actualData.copia_e_cola;
+      else if (actualData?.pixCopyPaste) pixText = actualData.pixCopyPaste;
+      else if (actualData?.brcode) pixText = actualData.brcode;
+      else if (actualData?.qrcode && actualData.qrcode.startsWith("000201")) pixText = actualData.qrcode; // Keep qrcode strict-ish as it might be image
+      else if (actualData?.payload) pixText = actualData.payload;
+
+      // If we still don't have text, try to find it recursively (Strict search)
+      if (!pixText) {
+        const foundText = findPixPayload(data);
+        if (foundText && foundText.startsWith("000201")) {
+          pixText = foundText;
+        }
+      }
+
+      // Extract image (Base64)
+      if (actualData?.qr_code_base64) pixImage = actualData.qr_code_base64;
+      else if (actualData?.base64) pixImage = actualData.base64;
+      else if (actualData?.imagem) pixImage = actualData.imagem;
+      else if (actualData?.qrcode && !actualData.qrcode.startsWith("000201")) pixImage = actualData.qrcode; // Assuming if not EMV, it might be the image string
+
+      // If we have text but no image, we can generate index.
+      // If we have image by no text, we display image but can't copy text (unless we want to copy the huge base64 which is wrong).
+
+      // Fallback: if we only found *something* via findPixPayload that wasn't EMV (starts with 000201), maybe it's the image
+      if (!pixImage && !pixText) {
+        const found = findPixPayload(data);
+        if (found) {
+          if (found.startsWith("000201")) pixText = found;
+          else pixImage = found;
+        }
+      }
+
+      // Special case: raw response logic from before
+      if (isBase64String) {
+        pixImage = data.pixPayload;
+      }
+
+      if (pixText && (pixText.includes("{{") || pixText.includes("}}"))) {
+        toast({
+          title: "Alerta de Configuração n8n",
+          description: "O n8n retornou o código da variável ({{...}}) em vez do valor. Verifique se usou 'Expression' no nó.",
+          variant: "destructive",
+          duration: 8000,
+        });
+        setLastError("n8n retornou template não processado. Veja o erro no toast.");
+      }
+
+      const transactionId = actualData?.id || actualData?.data?.id?.toString() || actualData?.transactionId;
+      const checkoutUrl = actualData?.checkoutUrl || actualData?.data?.secureUrl || actualData?.secureUrl;
+
+      if (!pixText && !pixImage) {
+        console.error("Payload recebido que falhou:", data);
+        throw new Error("Resposta não contém o código PIX nem imagem QR Code.");
       }
 
       setPaymentData({
-        pixPayload,
+        pixPayload: pixText || "", // Prefer text for the main "payload" concept if available
+        pixImage: pixImage || undefined,
         transactionId,
         checkoutUrl,
       });
@@ -130,7 +278,8 @@ export const Checkout = ({
       const message =
         error instanceof Error
           ? error.message
-          : "Tente novamente. Verifique se o webhook está correto.";
+          : "Tente novamente.";
+      setLastError(message);
       toast({
         title: "Erro ao gerar PIX",
         description: message,
@@ -228,37 +377,48 @@ export const Checkout = ({
 
                 {/* QR Code gerado a partir do payload PIX */}
                 <div className="bg-white p-4 rounded-lg inline-block">
-                  <QRCode
-                    value={paymentData.pixPayload}
-                    size={256}
-                    level="M"
-                    className="mx-auto"
-                  />
+                  {paymentData.pixImage ? (
+                    <img
+                      src={paymentData.pixImage.startsWith("data:") ? paymentData.pixImage : `data:image/png;base64,${paymentData.pixImage}`}
+                      alt="QR Code PIX"
+                      className="mx-auto max-w-[256px]"
+                    />
+                  ) : (
+                    <QRCode
+                      value={paymentData.pixPayload}
+                      size={256}
+                      level="M"
+                      className="mx-auto"
+                    />
+                  )}
                 </div>
 
                 {/* Código PIX copia e cola */}
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    Ou copie o código PIX:
+                    {paymentData.pixPayload ? "Ou copie o código PIX:" : "Código para copiar indisponível, use o QR Code acima."}
                   </p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={paymentData.pixPayload}
-                      readOnly
-                      className="bg-input border-border text-xs"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={handleCopyPix}
-                      className="shrink-0"
-                    >
-                      {copied ? (
-                        <CheckCircle className="h-4 w-4 text-success" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+
+                  {paymentData.pixPayload && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={paymentData.pixPayload}
+                        readOnly
+                        className="bg-input border-border text-xs"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleCopyPix}
+                        className="shrink-0"
+                      >
+                        {copied ? (
+                          <CheckCircle className="h-4 w-4 text-success" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <p className="text-sm text-muted-foreground">
@@ -267,6 +427,26 @@ export const Checkout = ({
                 </p>
               </div>
             </>
+          )}
+
+          {/* Debug Info */}
+          {paymentData === null && (
+            <div className="mt-4 p-4 bg-slate-100 rounded text-xs overflow-auto max-h-40">
+              <p className="font-bold mb-1">Debug Info:</p>
+              <p>Email: {email}</p>
+              <p>Webhook: {n8nWebhookUrl}</p>
+              {lastError && (
+                <p className="text-red-500 font-bold mt-2">Erro: {lastError}</p>
+              )}
+              {rawResponse && (
+                <div className="mt-2">
+                  <p className="font-semibold">Resposta Bruta:</p>
+                  <pre className="whitespace-pre-wrap break-all bg-white p-2 rounded border mt-1">
+                    {rawResponse}
+                  </pre>
+                </div>
+              )}
+            </div>
           )}
         </Card>
       </div>

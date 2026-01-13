@@ -29,7 +29,14 @@ const Index = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [n8nWebhookUrl, setN8nWebhookUrl] = useState(() => {
-    return localStorage.getItem("n8n_webhook_url") || "";
+    // Check localStorage first
+    const stored = localStorage.getItem("n8n_webhook_url");
+    // If stored value is the old wrong one, force update to the new one
+    if (stored && stored.includes("quHQosWlqJDLVm0C")) {
+      return "https://n8n.srv1218600.hstgr.cloud/webhook/gerarpix";
+    }
+    // Otherwise return stored or default
+    return stored || "https://n8n.srv1218600.hstgr.cloud/webhook/gerarpix";
   });
 
   useEffect(() => {

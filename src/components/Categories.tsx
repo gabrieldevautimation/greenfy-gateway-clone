@@ -63,13 +63,13 @@ export const Categories = ({ onSelectCategory }: CategoriesProps) => {
               onClick={() => onSelectCategory?.(category.id)}
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
-              <div className="relative p-6 flex items-center gap-6">
-                <img src={category.image} alt={category.name} className="w-16 h-16 object-contain rounded-lg" />
+              <div className="relative p-6 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6">
+                <img src={category.image} alt={category.name} className="w-16 h-16 object-contain rounded-lg shrink-0" />
                 <div className="flex-1">
                   <h3 className="font-display font-bold text-lg mb-1">{category.name}</h3>
                   <p className="text-muted-foreground text-sm">{category.description}</p>
                 </div>
-                <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto group-hover:bg-primary group-hover:text-primary-foreground transition-colors mt-auto">
                   Ver produtos
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
