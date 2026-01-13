@@ -30,8 +30,7 @@ export const Checkout = ({
     checkoutUrl?: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [lastError, setLastError] = useState<string | null>(null);
-  const [rawResponse, setRawResponse] = useState<string | null>(null);
+
 
   const formatPrice = (price: number) => {
     return price.toLocaleString("pt-BR", {
@@ -43,8 +42,7 @@ export const Checkout = ({
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleGeneratePix = async () => {
-    setLastError(null);
-    setRawResponse(null);
+
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
@@ -84,9 +82,13 @@ export const Checkout = ({
       // Construct payload matching the API schema hints from the error
       const payload = {
         external_id: externalId,
-        amount: Number(total.toFixed(2)), // Send as actual Number (e.g. 15.99)
-        total_amount: Number(total.toFixed(2)), // Send as actual Number
-        payment_method: "PIX",
+        // Hydra API expects amount in cents (integer)
+        amount: Math.round(total * 100),
+        total_amount: Math.round(total * 100), // Keep for legacy/n8n compatibility
+        payment_method: "pix", // Lowercase as per docs example
+        pix: {
+          expiresInDays: 1
+        },
         customer: { // Nested structure for robust API integration
           name: customerName,
           email: email,
@@ -122,7 +124,6 @@ export const Checkout = ({
       });
 
       const rawText = await response.text();
-      setRawResponse(rawText || "(Resposta vazia)"); // Show placeholder if empty
       console.log("Resposta bruta do n8n (status " + response.status + "):", rawText);
 
       // Always check for error status, but now we have the body to show to user
@@ -244,15 +245,7 @@ export const Checkout = ({
         pixImage = data.pixPayload;
       }
 
-      if (pixText && (pixText.includes("{{") || pixText.includes("}}"))) {
-        toast({
-          title: "Alerta de Configuração n8n",
-          description: "O n8n retornou o código da variável ({{...}}) em vez do valor. Verifique se usou 'Expression' no nó.",
-          variant: "destructive",
-          duration: 8000,
-        });
-        setLastError("n8n retornou template não processado. Veja o erro no toast.");
-      }
+
 
       const transactionId = actualData?.id || actualData?.data?.id?.toString() || actualData?.transactionId;
       const checkoutUrl = actualData?.checkoutUrl || actualData?.data?.secureUrl || actualData?.secureUrl;
@@ -275,11 +268,7 @@ export const Checkout = ({
       });
     } catch (error) {
       console.error("Erro ao gerar PIX:", error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Tente novamente.";
-      setLastError(message);
+      const message = error instanceof Error ? error.message : "Tente novamente.";
       toast({
         title: "Erro ao gerar PIX",
         description: message,
@@ -429,25 +418,9 @@ export const Checkout = ({
             </>
           )}
 
-          {/* Debug Info */}
-          {paymentData === null && (
-            <div className="mt-4 p-4 bg-slate-100 rounded text-xs overflow-auto max-h-40">
-              <p className="font-bold mb-1">Debug Info:</p>
-              <p>Email: {email}</p>
-              <p>Webhook: {n8nWebhookUrl}</p>
-              {lastError && (
-                <p className="text-red-500 font-bold mt-2">Erro: {lastError}</p>
-              )}
-              {rawResponse && (
-                <div className="mt-2">
-                  <p className="font-semibold">Resposta Bruta:</p>
-                  <pre className="whitespace-pre-wrap break-all bg-white p-2 rounded border mt-1">
-                    {rawResponse}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
+
+
+
         </Card>
       </div>
     </section>

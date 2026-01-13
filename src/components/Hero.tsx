@@ -1,55 +1,68 @@
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Crown, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroLogo from "@/assets/hero-logo.png";
+import luxuryHero from "@/assets/luxury-hero.png";
 
 export const Hero = () => {
   return (
-    <section className="relative overflow-hidden py-12 md:py-20 lg:py-32">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-primary/5 rounded-full blur-3xl" />
-
-      {/* Decorative Lines */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-primary to-transparent" />
-        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-primary to-transparent" />
-      </div>
+    <section className="relative overflow-hidden py-16 md:py-24 lg:py-36 bg-black text-white px-2">
+      {/* Background Effects - God Mode Style */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.15),transparent_70%)]" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -ml-64 -mb-64" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
-          <div className="space-y-6 text-center lg:text-left">
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              <span className="text-glow">BloxStoreBrasil</span>
+          <div className="space-y-8 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium animate-fade-in">
+              <Crown className="w-4 h-4" />
+              <span>Experiência God Mode Ativa</span>
+            </div>
+
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-600 drop-shadow-sm">
+                Greenfy Gateway
+              </span>
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
-              Especializada em contas de Blox Fruits, Roube um Brainrot e 99 Noites!
-              Tudo com segurança, rapidez e as melhores promoções garantidas.
+
+            <p className="text-lg md:text-xl text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+              A infraestrutura definitiva para pagamentos de alta conversão.
+              Segurança nível militar, integração instantânea e estética de elite.
             </p>
-            <Button
-              size="lg"
-              className="gradient-primary text-primary-foreground font-semibold px-8 py-6 text-lg animate-pulse-glow w-full sm:w-auto"
-            >
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              Acessar produtos
-            </Button>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-10 py-7 text-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all hover:scale-105"
+              >
+                <ShoppingBag className="mr-3 h-6 w-6" />
+                Explorar Ecossistema
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-8 border-t border-white/10">
+              <div className="flex items-center gap-2 text-gray-400">
+                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                <span className="text-sm font-medium">100% Seguro</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400">
+                <Zap className="w-5 h-5 text-emerald-500" />
+                <span className="text-sm font-medium">Entrega Flash</span>
+              </div>
+            </div>
           </div>
 
-          {/* Hero Image */}
-          <div className="relative flex justify-center lg:justify-end mt-8 lg:mt-0">
-            <div className="relative animate-float">
-              <div className="w-64 h-64 md:w-96 md:h-96 rounded-full overflow-hidden flex items-center justify-center">
+          {/* Hero Image - Luxury Architecture */}
+          <div className="relative flex justify-center lg:justify-end">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative w-full max-w-[500px] aspect-square rounded-2xl overflow-hidden glass-morphism border border-white/10 shadow-2xl transition-transform hover:scale-[1.02]">
                 <img
-                  src={heroLogo}
-                  alt="BloxStoreBrasil"
+                  src={luxuryHero}
+                  alt="Greenfy Premium"
                   className="w-full h-full object-cover"
                 />
               </div>
-              {/* Floating Stars */}
-              <div className="absolute -top-4 right-8 text-warning text-2xl animate-pulse">★</div>
-              <div className="absolute top-1/4 -right-4 text-warning text-xl animate-pulse" style={{ animationDelay: "0.5s" }}>★</div>
-              <div className="absolute bottom-1/4 -left-4 text-warning text-lg animate-pulse" style={{ animationDelay: "1s" }}>★</div>
-              <div className="absolute -bottom-4 right-1/4 text-warning text-xl animate-pulse" style={{ animationDelay: "0.3s" }}>★</div>
             </div>
           </div>
         </div>
